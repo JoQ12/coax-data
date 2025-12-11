@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: coax-data
+    env: python
+    plan: free
+    region: frankfurt  # Meilleure latence Afrique-Europe
+    autoDeploy: true
+
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+
+    startCommand: |
+      uvicorn api.main:app \
+      --host 0.0.0.0 \
+      --port $PORT \
+      --proxy-headers \
+      --forwarded-allow-ips="*"
+
+    envVars:
+      - key: ENV
+        value: "production"
+      - key: PORT
+        value: "10000"
+      - key: COAX_LOG_LEVEL
+        value: "info"
+      - key: COAX_API_VERSION
+        value: "v1"
+      - key: COAX_ENABLE_CACHE
+        value: "true"
+
+    healthCheckPath: "/"
+    healthCheckInterval: 30
+    healthCheckTimeout: 5
+
+    autoScaling:
+      minInstances: 1
+      maxInstances: 3
+      cpuThreshold: 70
+      memoryThreshold: 75
